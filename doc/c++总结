@@ -1,0 +1,51 @@
+
+
+	  A *pa = new A;
+  	delete []pa;
+        向上取出对象的个数， 决定调用多少次析构函数
+    <+34>:	sub    $0x8,%rax             //   rax 中保存着当前pa的值， 即对象的起始地址， 让rax减去8
+    <+38>:	mov    (%rax),%rax          //   取出rax所存的值
+    <+41>:	lea    0x0(,%rax,4),%rdx    //  得到当前对象总共的自己数，放在rdx中
+    <+49>:	mov    -0x28(%rbp),%rax     // rax 和回到对象的地址
+    <+53>:	lea    (%rdx,%rax,1),%rbx   // rbx = rdx + rax得到对象内存的边界
+    <+57>:	cmp    -0x28(%rbp),%rbx      //对象的起始地址和对象的结束地址进行调用析构函数
+    <+61>:	je     0x400843 <main()+77>   //相等结束
+    <+63>:	sub    $0x4,%rbx            //rbx减少
+    <+67>:	mov    %rbx,%rdi				      //控制循环
+    <+70>:	callq  0x4008ec <A::~A()>   //调用析构函数
+    <+75>:	jmp    0x40082f <main()+57>
+    <+77>:	mov    -0x28(%rbp),%rax
+    <+81>:	sub    $0x8,%rax
+    <+85>:	mov    %rax,%rdi            //向当前的对象的位置减少8字节释放内存， 但是这实际上不是我们的内存
+    <+88>:	callq  0x4006e0 <_ZdaPv@plt>
+
+
+
+    int *q = new int[10];
+   <+41>:	mov    $0x28,%edi
+   <+46>:	callq  0x400680 <_Znam@plt>
+   <+51>:	mov    %rax,-0x8(%rbp)
+
+	    delete q;
+   <+55>:	mov    -0x8(%rbp),%rax
+   <+59>:	mov    %rax,%rdi
+   <+62>:	callq  0x400690 <_ZdlPv@plt>
+
+
+	    A *pa = new A;
+  <+8>:	mov    $0x4,%edi
+  <+13>:	callq  0x4006f0 <_Znwm@plt>
+  <+18>:	mov    %rax,-0x18(%rbp)
+
+	    delete []pa;   //没有析构函数的调用和向上取得对象个数的操作
+ <+22>:	cmpq   $0x0,-0x18(%rbp)
+ <+27>:	je     0x40081f <main()+41>
+ <+29>:	mov    -0x18(%rbp),%rax
+ <+33>:	mov    %rax,%rdi
+ <+36>:	callq  0x4006e0 <_ZdaPv@plt>
+
+
+
+ 
+
+
