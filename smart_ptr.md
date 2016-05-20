@@ -23,11 +23,11 @@ namespace boost {
 > 上面是我们关注的几个函数
 > 下面是我对于SGI中的源码的分析
 >> shared_ptr
->>> T *px;
+>>> T *px; <br>
 >>> shared_count pn;
->>>> int id_;
+>>>> int id_; <br>
 >>>> sp_counted_base *pi_;
->>>>> long use_count;
+>>>>> long use_count; <br>
 >>>>> long weak_count;
 
 ```cpp
@@ -36,24 +36,27 @@ void main()
 	shared_ptr<int> sp = new int;
 }
 ```
-> 程序调用了
-    shared_ptr( Y * p ): px( p ), pn() 
-    boost::detail::sp_pointer_construct( this, p, pn );
-    //接受的参数是智能指针， 裸指针p， 引用计数pn
-    void sp_pointer_construct( 
-    ppx, p, shared_count & pn )
-    {//shared_count 中的_pi指向了一个具体的实例，两个计数都是1，包含了裸指针
-   		shared_count( p ).swap( pn )；
-    }
-> 在 shared_count的默认构造中 pi_被初始化NULL，
-> 在shared_count的拷贝构造中
+程序调用了shared_ptr( Y * p ): px( p ), pn() <br>
+boost::detail::sp_pointer_construct( this, p, pn ); <br>
+    
+```cpp
+ //接受的参数是智能指针， 裸指针p， 引用计数pn  
+void sp_pointer_construct(ppx, p, shared_count & pn ) 
+{//shared_count 中的_pi指向了一个具体的实例，两个计数都是1，包含了裸指针  
+	shared_count( p ).swap( pn )；
+}
+ ```
+在 shared_count的默认构造中 pi_被初始化NULL，<br>
+在shared_count的拷贝构造中<br>
+```cpp
     shared_count(shared_count const & r): pi_(r.pi_) 
     {
         if( pi_ != 0 ) pi_->add_ref_copy();
         //use_count++;// 原子操作
     }
-> shared_ptr<int> sp2(sp);
-> 调用copy constructor强引用计数+1
+```
+> shared_ptr<int> sp2(sp);<br>
+> 调用copy constructor强引用计数+1<br>
 ```cpp
 namespace boost {
   template<typename T> class weak_ptr {
@@ -67,14 +70,14 @@ namespace boost {
   };  
 } 
 ```
-> 可以看出weak_ptr 中不能通过裸指针构造 
-> weak_ptr<int> wp(sp2);
-> weak_ptr(const shared_ptr<Y>& r);---> px( r.px ), pn( r.pn )
-> 指向相同的裸指针和引用计数    weak_count(shared_count const & r): pi_(r.pi_)
-> pi_->weak_count++;
-> weak_ptr<int> wwp(wp);
-> 通过弱引用进行构造 weak_ptr( weak_ptr<Y> const & r );----->
-> px(r.lock().get()), pn(r.pn)
+> 可以看出weak_ptr 中不能通过裸指针构造 <br>
+> weak_ptr<int> wp(sp2); <br>
+> weak_ptr(const shared_ptr<Y>& r);---> px( r.px ), pn( r.pn ) <br>
+> 指向相同的裸指针和引用计数 weak_count(shared_count const & r): pi_(r.pi_) <br>
+> pi_->weak_count++;<br>
+> weak_ptr<int> wwp(wp);<br>
+> 通过弱引用进行构造 weak_ptr( weak_ptr<Y> const & r );-----><br>
+> px(r.lock().get()), pn(r.pn)<br>
 ```cpp
 shared_ptr<T> lock() const BOOST_NOEXCEPT
 {
@@ -115,24 +118,21 @@ weak_count(weak_count const & r): pi_(r.pi_)
      if(pi_ != 0) pi_->weak_add_ref();//weak_ptr++;
 }
 ```
-> 经过以上分析可知道:
-* shared_ptr->weak_ptr :
->> px回指, pn中的pi指向shared_ptr中的pi,  pi->weak_count++;
-* weak_ptr->weak_ptr :
->> px需要回指, 但是weak_ptr不能直接get,需要先进行lock, 
->> pn中的pi指向shared_ptr中的pi,  pi->weak_count++;
-* weak_ptr->shared_ptr :
->> px需要回指, pn指向weak_ptr中的pn， pn.pi->use_count++;
-* shared_ptr->shared_ptr :
->> px需要回指, pn指向weak_ptr中的pn， pn.pi->use_count++;
-* T *p->shared_ptr : 
->> px回指, pn(),什么都没有，sp_pointer_construct()的调用
->> shared_count( p ).swap( pn )；
->> 在堆空间上new了一个具体的shared_count_base继承类的实例
->> use_count=weak_ptr=1,Then 将管理权给了pn;
->
->
-> 还有一些基本的函数这里给出定义:
+经过以上分析可知道:<br>
+* shared_ptr->weak_ptr :<br>
+  px回指, pn中的pi指向shared_ptr中的pi,  pi->weak_count++;<br>
+* weak_ptr->weak_ptr :<br>
+  px需要回指, 但是weak_ptr不能直接get,需要先进行lock, <br>
+  pn中的pi指向shared_ptr中的pi,  pi->weak_count++;<br>
+* weak_ptr->shared_ptr :<br>
+  px需要回指, pn指向weak_ptr中的pn， pn.pi->use_count++;<br>
+* shared_ptr->shared_ptr :<br>
+  px需要回指, pn指向weak_ptr中的pn， pn.pi->use_count++;<br>
+* T *p->shared_ptr : <br>
+  px回指, pn(),什么都没有，sp_pointer_construct()的调用shared_count( p ).swap( pn )；<br>
+  在堆空间上new了一个具体的shared_count_base继承类的实例<br>
+  use_count=weak_ptr=1,Then 将管理权给了pn;<br>
+还有一些基本的函数这里给出定义:
 ```cpp
 shared_ptr & shared_ptr::operator=( shared_ptr const & r ) 
 {
