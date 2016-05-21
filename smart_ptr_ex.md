@@ -1,6 +1,6 @@
 #对于智能指针的线程安全的分析
 在同篇中shared_ptr,weak_ptr的源码已经分析了一遍<br>
-##为什么boost库中的这两个只能指针是线程安全的?
+##为什么boost库中的这两个smart指针是线程安全的?
 thr1 and thr2 and thr3表示三个线程<br>
 ```cpp
 /*伪代码*/
