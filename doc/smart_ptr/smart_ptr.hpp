@@ -20,11 +20,16 @@ namespace hgg
                     delete this;
                 }
             }
+            void weak_reliease() {
+                /*原则上这句话是不会发生的*/
+                if (--_weak_count == 0) {
+                    delete this;
+                }
+            }
             count_base(): _use_count(1), _weak_count(1){}
             virtual ~count_base()=0;
     };
     count_base::~count_base(){
-        std::cout << "~base" << std::endl;
     }
     template <typename T>
     class count_dervied : public count_base
@@ -34,7 +39,6 @@ namespace hgg
         public:
             count_dervied(T *ptr) :_ptr(ptr) {}
             ~count_dervied(){
-                std::cout << "~dervied" << std::endl;
             }
     };
     class weak_count;
@@ -57,7 +61,6 @@ namespace hgg
                 }
                 catch (...)
                 {
-                    std::cout << "can't get a new size" << std::endl;
                     return;
                 }
             }
@@ -136,7 +139,18 @@ namespace hgg
             {
                 if (_pi != 0) _pi->add_weak_ref();
             }
-            ~weak_count(){}
+            weak_count(const weak_count &wp) : _pi(wp._pi) {
+                if (_pi != 0) _pi->add_weak_ref();
+            }
+            void swap(weak_count &other)
+            {
+                count_base *tmp = other._pi;
+                other._pi = _pi;
+                _pi = tmp;
+            }
+            ~weak_count(){
+                if (_pi != 0) _pi->weak_reliease();
+            }
     };
     template <typename T>
     class weak_ptr
@@ -152,11 +166,18 @@ namespace hgg
             {
                 return shared_ptr<T>(*this);
             }
+            void swap(weak_ptr &wp) {
+                _px = wp._px;
+                _pn.swap(wp._pn);
+            }
             weak_ptr(const shared_ptr<T> &sp) 
                 : _px(sp._px), _pn(sp._pn){}
             weak_ptr(const weak_ptr &wp)
                 : _px(wp.lock().get()), _pn(wp._pn){}
-            //~weak_ptr();
+            weak_ptr &operator = (const weak_ptr & wp) {
+                weak_ptr(wp).swap(*this);
+                return *this;
+            }
     };
     template <typename T>
     shared_ptr<T>::shared_ptr(const weak_ptr<T> &wp) 
@@ -165,8 +186,3 @@ namespace hgg
         if (_pi != 0) _pi->add_use_count();
     }
 };
-//int main()
-//{
-//    hgg::shared_ptr<int> sp(new int);
-//    return 0;
-//}
