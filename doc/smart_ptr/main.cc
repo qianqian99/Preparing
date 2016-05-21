@@ -1,4 +1,5 @@
 #include "smart_ptr.hpp"
+#include <iostream>
 using namespace std;
 struct A
 {
@@ -15,5 +16,8 @@ int main()
     hgg::shared_ptr<int> sp3(sp2);
     hgg::shared_ptr<int> sp4(wp2);
     hgg::weak_ptr<A> wp3(wp1);
+    cout << *sp3 << endl;
+    cout << sp1->a << endl;
+    cout << wp1.lock()->b << endl;
     return 0;
 }

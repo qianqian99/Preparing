@@ -1,4 +1,3 @@
-#include <iostream>
 namespace hgg
 {
     class count_base
@@ -121,6 +120,12 @@ namespace hgg
                     return *this;
                 }
                 shared_ptr(const weak_ptr<T> &);
+                T &operator *() {
+                    return *_px;
+                }
+                T *operator ->() {
+                    return _px;
+                }
                 //shared_ptr();
                 /*because int the shared_ptr, we haven,t do new or malloc, 
                  * so I need't to write destructor*/
