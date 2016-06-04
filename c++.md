@@ -32,5 +32,54 @@ new返回的指针总是指向不同的单个对象<br>
     非volatile可以赋给volatile变量反之不行<br>
     * 举例：<br>
     在STL中，二级配置器中的free_list就是volatile的，原因是他需要支持多线程.
-    
-
+5. c++中可以取代c的类型强转:<br>
+	* static_cast<>()<br>
+	1. 算术类型转化<br>
+	```cpp
+	int a = 10;
+	float f = static_cast<float>(a);
+	```
+	2. 基类指针转为派生类指针<br>
+	```cpp
+	A *base;
+	B *der;
+	der = static_cast<B *>(base);
+	```
+	3. 转化为void<br>
+	```cpp
+	static_cast<void>(a);
+	```
+	* const_cast<>():<br>	
+	1.去掉const属性，但是写未定义<br>
+	2.去掉volatile属性<br>
+	```cpp
+	int volatile *pa;
+	int *pb = pa; // error
+	int *pc = const_cast<int *>(pa); //right
+	```
+	* reinterpret_cast<>():<br>
+	1. 从bit位改变解析的方式<br>
+	```cpp
+	int a = 10;
+	float f = *reinterpret_cast<float*> (&a);
+	```
+	2. 将int 转化位指针<br>
+	```cpp
+	void *p = reinterpret_cast<void *>(10);
+	```
+	3. pointer, pointer to function, reference<br>
+	* dynamic_cast<>():<br>
+	多用于动态类型识别:<br>
+	1. 继承关系中有虚函数<br>
+	2. 基类指针指向派生类对象
+	```cpp
+	/*A,B中必须有虚函数*/
+	A *pbase = new B;
+	B *pder = dynamic_cast<B *>(pbase);
+	pder != NULL; // true;
+	delete pder;
+	pbase = new A;
+	pder = dynamic_cast<B *>(pbase);
+	pder == NULL; // true;
+	delete pbase;
+	```
